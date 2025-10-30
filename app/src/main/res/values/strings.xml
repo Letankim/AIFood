@@ -1,0 +1,91 @@
+<resources>
+    <string name="app_name">FoodApp</string>
+
+    <!-- IngredientSuggestionFragment -->
+    <string name="enter_ingredients_hint">Please enter ingredients</string>
+    <string name="suggest_button_text">Suggest</string>
+    <string name="error_parsing_dish">Error parsing dish</string>
+
+    <!-- Dish Actions -->
+    <string name="log_meal_button_text">Log to Meal</string>
+    <string name="add_to_favorites_button_text">Add to Favorites</string>
+    <string name="remove_from_favorites_button_text">Remove from Favorites</string>
+
+    <!-- Success Messages -->
+    <string name="meal_logged_success">Meal logged successfully!</string>
+    <string name="no_dish_to_log">No dish to log</string>
+    <string name="added_to_favorites_success">Added to Favorites!</string>
+    <string name="removed_from_favorites_success">Removed from Favorites!</string>
+    <string name="no_dish_to_favorite">No dish to add to Favorites</string>
+
+    <!-- Dish Detail Labels -->
+    <string name="dish_category_label">Category:</string>
+    <string name="dish_ingredients_label">Ingredients:</string>
+    <string name="dish_steps_label">Instructions:</string>
+    <string name="dish_nutrition_label">Nutrition:</string>
+
+    <!-- Nutrition Format -->
+    <string name="nutrition_format">Calories: %1$d kcal\nProtein: %2$dg\nCarbs: %3$dg\nFat: %4$dg</string>
+
+    <!-- Content Descriptions -->
+    <string name="dish_image_content_description">Dish Image</string>
+
+    <!-- Additional Common Strings -->
+    <string name="profile_title">Profile</string>
+    <string name="edit_profile_title">Edit Profile</string>
+    <string name="change_password_title">Change Password</string>
+    <string name="full_name_hint">Full Name</string>
+    <string name="email_hint">Email</string>
+    <string name="old_password_hint">Old Password</string>
+    <string name="new_password_hint">New Password</string>
+    <string name="confirm_password_hint">Confirm New Password</string>
+    <string name="save_button_text">Save</string>
+    <string name="cancel_button_text">Cancel</string>
+    <string name="change_password_button_text">Change Password</string>
+
+    <!-- Error Messages -->
+    <string name="please_fill_all_fields">Please fill all fields</string>
+    <string name="profile_updated_success">Profile updated successfully!</string>
+    <string name="failed_to_update_profile">Failed to update profile</string>
+    <string name="password_changed_success">Password changed successfully!</string>
+    <string name="old_password_incorrect">Old password is incorrect</string>
+    <string name="passwords_do_not_match">New passwords do not match</string>
+    <string name="password_min_length">New password must be at least 6 characters</string>
+
+    <!-- Dashboard -->
+    <string name="daily_calories_title">Daily Calories</string>
+    <string name="weekly_calories_title">Weekly Calories</string>
+
+    <!-- Daily Suggestions -->
+    <string name="todays_suggestions_title">Today\'s Suggestions</string>
+    <string name="dishes_subtitle">5 delicious dishes for you!</string>
+    <string name="search_dishes_hint">Search dishes...</string>
+
+    <!-- Bottom Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_history">History</string>
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_more">More</string>
+
+    <!-- More Menu -->
+    <string name="more_scan_food">Scan Food</string>
+    <string name="more_daily_suggestions">Daily Suggestions</string>
+    <string name="more_ingredient_suggestion">Ingredient Suggestion</string>
+    <string name="more_favorites">Favorites</string>
+
+    <!-- Login/Register -->
+    <string name="login_title">Login</string>
+    <string name="register_title">Register</string>
+    <string name="username_hint">Username</string>
+    <string name="password_hint">Password</string>
+    <string name="login_button">Login</string>
+    <string name="register_button">Register</string>
+    <string name="forgot_password">Forgot Password?</string>
+
+    <!-- Success/Error -->
+    <string name="login_success">Login successful!</string>
+    <string name="register_success">Registration successful!</string>
+    <string name="invalid_credentials">Invalid username or password</string>
+    <string name="user_exists">User already exists</string>
+</resources>
