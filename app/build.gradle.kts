@@ -32,6 +32,19 @@ android {
     buildFeatures {
         dataBinding = false
     }
+
+    packaging {
+        resources {
+            pickFirsts += setOf(
+                "META-INF/LICENSE.md",
+                "META-INF/NOTICE.md",
+                "META-INF/DEPENDENCIES",
+                "META-INF/AL2.0",
+                "META-INF/*.kotlin_module"
+            )
+        }
+    }
+
 }
 
 dependencies {
@@ -54,6 +67,5 @@ dependencies {
     implementation("androidx.camera:camera-view:1.3.3")
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("com.google.code.gson:gson:2.10.1")
-//    implementation("com.sun.mail:android-mail:1.6.7")
-//    implementation("com.sun.mail:android-activation:1.6.7")
+    implementation("com.sun.mail:jakarta.mail:2.0.1")
 }

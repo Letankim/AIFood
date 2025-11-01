@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.foodapp.R;
 import com.example.foodapp.database.UserDatabaseHelper;
-//import com.example.foodapp.utils.EmailSender;
+import com.example.foodapp.utils.EmailSender;
 
 import java.util.Random;
 
@@ -58,9 +58,9 @@ public class ForgotPasswordActivity extends AppCompatActivity {
             return;
         }
 
-//        new EmailSender(this, email, newPassword).execute();
-//
-//        Toast.makeText(this, "Sending new password...", Toast.LENGTH_SHORT).show();
+        new EmailSender(this, email, newPassword).send();
+
+        Toast.makeText(this, "Sending new password...", Toast.LENGTH_SHORT).show();
         finish();
     }
 

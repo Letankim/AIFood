@@ -1,6 +1,7 @@
 package com.example.foodapp.fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,6 +37,7 @@ public class IngredientSuggestionFragment extends Fragment {
     private Dish suggestedDish;
     private FoodDatabaseHelper dbHelper;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private static final String TAG = "IngredientSuggestionFragment";
 
     private static final class JsonKeys {
         private static final String DISH_NAME = "dish_name";
@@ -50,6 +52,7 @@ public class IngredientSuggestionFragment extends Fragment {
         private static final String PROTEIN_G = "protein_g";
         private static final String CARBOHYDRATES_G = "carbohydrates_g";
         private static final String FAT_G = "fat_g";
+        private static final String DISHES = "dishes";  // Added for array handling
     }
 
     @Override
@@ -88,12 +91,20 @@ public class IngredientSuggestionFragment extends Fragment {
                         getActivity().runOnUiThread(() -> {
                             loadingProgress.setVisibility(View.GONE);
                             try {
-                                ApiFoodScanner.saveDishFromJson(getContext(), result, "suggest");
-                                displayDish(result);
-                                dishCard.setVisibility(View.VISIBLE);
+                                // Extract first dish from {"dishes": [...]}
+                                JSONObject firstDish = extractFirstDish(result);
+                                if (firstDish != null) {
+                                    ApiFoodScanner.saveDishFromJson(getContext(), firstDish, "suggest");
+                                    displayDish(firstDish);
+                                    dishCard.setVisibility(View.VISIBLE);
+                                    Log.d(TAG, "Displayed first suggested dish: " + firstDish.optString(JsonKeys.DISH_NAME));
+                                } else {
+                                    throw new JSONException("No dishes in response");
+                                }
                             } catch (Exception e) {
+                                Log.e(TAG, "Error processing response: " + e.getMessage(), e);
                                 if (getContext() != null) {
-                                    Toast.makeText(getContext(), getString(R.string.error_parsing_dish), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getContext(), getString(R.string.error_parsing_dish) + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                 }
                             }
                         });
@@ -102,6 +113,7 @@ public class IngredientSuggestionFragment extends Fragment {
 
                 @Override
                 public void onError(String error) {
+                    Log.e(TAG, "API Error: " + error);
                     if (getActivity() != null) {
                         getActivity().runOnUiThread(() -> {
                             loadingProgress.setVisibility(View.GONE);
@@ -174,44 +186,73 @@ public class IngredientSuggestionFragment extends Fragment {
         return view;
     }
 
+    private JSONObject extractFirstDish(JSONObject result) throws JSONException {
+        if (result.has(JsonKeys.DISHES)) {
+            JSONArray dishes = result.getJSONArray(JsonKeys.DISHES);
+            if (dishes.length() > 0) {
+                return dishes.getJSONObject(0);
+            }
+        }
+        return null;
+    }
+
     private void displayDish(JSONObject json) {
         try {
             suggestedDish = new Dish();
-            suggestedDish.setName(json.getString(JsonKeys.DISH_NAME));
-            suggestedDish.setCategory(json.getString(JsonKeys.CATEGORY));
-            suggestedDish.setIngredients(json.getJSONArray(JsonKeys.INGREDIENTS).toString());
-            suggestedDish.setSteps(json.getJSONArray(JsonKeys.STEPS).toString());
-            JSONObject nutr = json.getJSONObject(JsonKeys.NUTRITION);
-            suggestedDish.setCalories(nutr.getInt(JsonKeys.TOTAL_CALORIES));
-            suggestedDish.setImageUrl(json.optString(JsonKeys.IMAGE_URL, "https://img.freepik.com/free-photo/top-view-table-full-delicious-food-composition_23-2149141352.jpg"));
+            suggestedDish.setName(json.optString(JsonKeys.DISH_NAME, "Unknown Dish"));  // Fallback
+            suggestedDish.setCategory(json.optString(JsonKeys.CATEGORY, "General"));  // Fallback + opt
+            suggestedDish.setIngredients(json.optJSONArray(JsonKeys.INGREDIENTS) != null ?
+                    json.getJSONArray(JsonKeys.INGREDIENTS).toString() : "[]");
+            suggestedDish.setSteps(json.optJSONArray(JsonKeys.STEPS) != null ?
+                    json.getJSONArray(JsonKeys.STEPS).toString() : "[]");
+
+            JSONObject nutr = json.optJSONObject(JsonKeys.NUTRITION);
+            if (nutr != null) {
+                suggestedDish.setCalories(nutr.optInt(JsonKeys.TOTAL_CALORIES, 0));
+            } else {
+                suggestedDish.setCalories(0);
+            }
+            suggestedDish.setImageUrl(json.optString(JsonKeys.IMAGE_URL,
+                    "https://img.freepik.com/free-photo/top-view-table-full-delicious-food-composition_23-2149141352.jpg"));
 
             dishNameTv.setText(suggestedDish.getName());
             categoryTv.setText(getString(R.string.dish_category_label) + " " + suggestedDish.getCategory());
 
-            JSONArray ing = json.getJSONArray(JsonKeys.INGREDIENTS);
+            JSONArray ing = json.optJSONArray(JsonKeys.INGREDIENTS);
             StringBuilder ingStr = new StringBuilder();
-            for (int i = 0; i < ing.length(); i++) {
-                JSONObject item = ing.getJSONObject(i);
-                ingStr.append("- ").append(item.getString(JsonKeys.NAME)).append(": ").append(item.getString(JsonKeys.QUANTITY)).append("\n");
+            if (ing != null) {
+                for (int i = 0; i < ing.length(); i++) {
+                    JSONObject item = ing.optJSONObject(i);
+                    if (item != null) {
+                        ingStr.append("- ").append(item.optString(JsonKeys.NAME, "Unknown"))
+                                .append(": ").append(item.optString(JsonKeys.QUANTITY, "?")).append("\n");
+                    }
+                }
             }
             ingredientsTv.setText(getString(R.string.dish_ingredients_label) + "\n" + ingStr.toString());
 
-            JSONArray steps = json.getJSONArray(JsonKeys.STEPS);
+            JSONArray steps = json.optJSONArray(JsonKeys.STEPS);
             StringBuilder stepsStr = new StringBuilder();
-            for (int i = 0; i < steps.length(); i++) {
-                stepsStr.append((i + 1) + ". ").append(steps.getString(i)).append("\n");
+            if (steps != null) {
+                for (int i = 0; i < steps.length(); i++) {
+                    stepsStr.append((i + 1) + ". ").append(steps.optString(i, "Step missing")).append("\n");
+                }
             }
             stepsTv.setText(getString(R.string.dish_steps_label) + "\n" + stepsStr.toString());
 
-            nutritionTv.setText(getString(R.string.dish_nutrition_label) + "\n" +
-                    getString(R.string.nutrition_format,
-                            nutr.getInt(JsonKeys.TOTAL_CALORIES),
-                            nutr.getInt(JsonKeys.PROTEIN_G),
-                            nutr.getInt(JsonKeys.CARBOHYDRATES_G),
-                            nutr.getInt(JsonKeys.FAT_G)
-                    ));
+            if (nutr != null) {
+                nutritionTv.setText(getString(R.string.dish_nutrition_label) + "\n" +
+                        getString(R.string.nutrition_format,
+                                nutr.optInt(JsonKeys.TOTAL_CALORIES, 0),
+                                nutr.optInt(JsonKeys.PROTEIN_G, 0),
+                                nutr.optInt(JsonKeys.CARBOHYDRATES_G, 0),
+                                nutr.optInt(JsonKeys.FAT_G, 0)
+                        ));
+            } else {
+                nutritionTv.setText(getString(R.string.dish_nutrition_label) + "\nUnknown nutrition info");
+            }
 
-            // Cập nhật trạng thái nút yêu thích
+            // Update favorite button state
             executorService.execute(() -> {
                 boolean isFavorite = dbHelper.isFavorite(suggestedDish.getName());
                 if (getActivity() != null) {
@@ -225,7 +266,10 @@ public class IngredientSuggestionFragment extends Fragment {
                 }
             });
 
+            Log.d(TAG, "Dish displayed successfully: " + suggestedDish.getName());
+
         } catch (JSONException e) {
+            Log.e(TAG, "DisplayDish JSON error: " + e.getMessage(), e);
             if (getContext() != null) {
                 Toast.makeText(getContext(), getString(R.string.error_parsing_dish), Toast.LENGTH_SHORT).show();
             }

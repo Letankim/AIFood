@@ -243,6 +243,7 @@ public class ApiFoodScanner {
                         try {
                             String rawText = response.getJSONArray("candidates").getJSONObject(0)
                                     .getJSONObject("content").getJSONArray("parts").getJSONObject(0).getString("text");
+                            Log.d(TAG, "Raw AI response: " + rawText);  // Debug log
                             String jsonString = extractJsonFromText(rawText);
                             if (jsonString != null) {
                                 JSONObject json = new JSONObject(jsonString);
